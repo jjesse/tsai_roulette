@@ -60,7 +60,7 @@ function setCallout(index: number): void {
 
 function shareLine(track: Track): string {
   const artists = track.artists.join(", ");
-  return `Small Artist Roulette No. ${track.number} — ${track.name} — ${artists}\n${track.url}\n${SITE_URL}`;
+  return `Small Artist Roulette No. ${track.number} — ${track.name} — ${artists}\n${SITE_URL}\n${track.url}`;
 }
 
 function renderHistory(items: HistoryItem[]): void {
