@@ -1,5 +1,13 @@
 import { fetchPlaylist } from "./api.ts";
-import { clearPlayedIds, loadPlayedIds, savePlayedIds } from "./played.ts";
+import {
+  clearPlayedIds,
+  loadPlayedIds,
+  loadSession,
+  savePlayedWithHistory,
+  type HistoryItem,
+} from "./played.ts";
+
+const SITE_URL = "https://smallartistroulette.subatomicforge.com";
 import { pickUnplayed, randomIndex, remainingUniqueCount, uniqueTrackCount } from "../shared/playlist.ts";
 import type { PlaylistPayload, Track } from "../shared/types.ts";
 import { RouletteWheel } from "./wheel.ts";
@@ -19,6 +27,8 @@ const resultEl = required<HTMLElement>("#result");
 const remainingEl = required<HTMLParagraphElement>("#remaining");
 const roundNote = required<HTMLParagraphElement>("#round-note");
 const callout = required<HTMLElement>("#callout");
+const historyEl = required<HTMLElement>("#history");
+const historyList = required<HTMLElement>("#history-list");
 
 const wheel = new RouletteWheel(canvas);
 let playlist: PlaylistPayload | null = null;
@@ -48,6 +58,21 @@ function setCallout(index: number): void {
   callout.textContent = String(index + 1);
 }
 
+function shareLine(track: Track): string {
+  const artists = track.artists.join(", ");
+  return `Small Artist Roulette No. ${track.number} — ${track.name} — ${artists} ${SITE_URL}`;
+}
+
+function renderHistory(items: HistoryItem[]): void {
+  historyEl.hidden = items.length === 0;
+  historyList.innerHTML = items
+    .map(
+      (item) =>
+        `<li><span class="hist-num">No. ${item.number}</span> <span class="hist-title">${escapeHtml(item.name)}</span> <span class="hist-artist">${escapeHtml(item.artists.join(", "))}</span></li>`,
+    )
+    .join("");
+}
+
 function showResult(track: Track): void {
   const artists = track.artists.join(", ");
   const art = track.albumArt
@@ -56,6 +81,7 @@ function showResult(track: Track): void {
   const explicit = track.explicit ? `<span class="explicit">E</span>` : "";
 
   resultEl.classList.remove("empty");
+  resultEl.classList.remove("reveal");
   resultEl.innerHTML = `
     ${art}
     <div class="meta">
@@ -63,7 +89,10 @@ function showResult(track: Track): void {
       <h2>${escapeHtml(track.name)} ${explicit}</h2>
       <p class="artists">${escapeHtml(artists)}</p>
       <p class="album">${escapeHtml(track.album)} · ${formatDuration(track.durationMs)}</p>
-      <a class="open-link" href="${track.url}" target="_blank" rel="noopener noreferrer">Open in Spotify</a>
+      <div class="result-actions">
+        <a class="open-link" href="${track.url}" target="_blank" rel="noopener noreferrer">Open in Spotify</a>
+        <button type="button" class="copy-pick" data-share="${escapeHtml(shareLine(track))}">Copy</button>
+      </div>
     </div>
     <iframe
       class="embed"
@@ -73,6 +102,19 @@ function showResult(track: Track): void {
       title="Spotify player for ${escapeHtml(track.name)}"
     ></iframe>
   `;
+  void resultEl.offsetWidth;
+  resultEl.classList.add("reveal");
+
+  const copyButton = resultEl.querySelector<HTMLButtonElement>(".copy-pick");
+  copyButton?.addEventListener("click", async () => {
+    const text = copyButton.dataset.share ?? shareLine(track);
+    try {
+      await navigator.clipboard.writeText(text);
+      copyButton.textContent = "Copied";
+    } catch {
+      copyButton.textContent = "Copy failed";
+    }
+  });
 }
 
 function escapeHtml(value: string): string {
@@ -106,8 +148,10 @@ function startNewSession(): void {
   refreshPlayed([]);
   roundNote.hidden = true;
   resultEl.classList.add("empty");
+  resultEl.classList.remove("reveal");
   resultEl.innerHTML = `<p>New session. Spin the wheel. The song stays hidden until it lands.</p>`;
   updateRemaining([]);
+  renderHistory([]);
   setStatus(`New session — ${playlist.tracks.length} songs. Spin to pick a number.`);
 }
 
@@ -123,7 +167,12 @@ async function spin(): Promise<void> {
 
   const played = loadPlayedIds(playlist.snapshotId);
   const pick = pickUnplayed(playlist.tracks, played, randomIndex);
-  savePlayedIds(playlist.snapshotId, pick.playedIds);
+  const session = savePlayedWithHistory(playlist.snapshotId, pick.playedIds, {
+    number: pick.track.number,
+    id: pick.track.id,
+    name: pick.track.name,
+    artists: pick.track.artists,
+  });
 
   if (pick.newRound) {
     roundNote.hidden = false;
@@ -138,6 +187,7 @@ async function spin(): Promise<void> {
   setCallout(index);
   showResult(pick.track);
   refreshPlayed(pick.playedIds);
+  renderHistory(session.history);
 
   updateRemaining(pick.playedIds);
   setStatus(`Landed on ${pick.track.number}. Press play in the Spotify player.`);
@@ -168,11 +218,12 @@ async function boot(): Promise<void> {
     setStatus("Loading playlist…");
     playlist = await fetchPlaylist();
     wheel.setSliceCount(playlist.tracks.length);
-    const played = loadPlayedIds(playlist.snapshotId);
-    refreshPlayed(played);
+    const session = loadSession(playlist.snapshotId);
+    refreshPlayed(session.ids);
+    renderHistory(session.history);
     sizeWheel();
     setCallout(wheel.pointerIndex());
-    updateRemaining(played);
+    updateRemaining(session.ids);
     setStatus(`Ready — ${playlist.tracks.length} songs. Spin to pick a number.`);
     spinButton.disabled = false;
     newSessionButton.disabled = false;

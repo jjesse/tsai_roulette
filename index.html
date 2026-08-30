@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Small Artist Roulette</title>
+    <meta name="description" content="Spin a numbered wheel. The song stays secret until it lands." />
+    <link rel="canonical" href="https://smallartistroulette.subatomicforge.com/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Small Artist Roulette" />
+    <meta property="og:description" content="Spin a numbered wheel. The song stays secret until it lands." />
+    <meta property="og:url" content="https://smallartistroulette.subatomicforge.com/" />
+    <meta property="og:image" content="https://smallartistroulette.subatomicforge.com/og.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Small Artist Roulette" />
+    <meta name="twitter:description" content="Spin a numbered wheel. The song stays secret until it lands." />
+    <meta name="twitter:image" content="https://smallartistroulette.subatomicforge.com/og.jpg" />
   </head>
   <body>
     <div class="app">
@@ -27,9 +40,15 @@
           </div>
         </div>
 
-        <section id="result" class="result empty" aria-live="polite">
-          <p>Spin the wheel. The song stays hidden until it lands.</p>
-        </section>
+        <div class="after-spin">
+          <section id="result" class="result empty" aria-live="polite">
+            <p>Spin the wheel. The song stays hidden until it lands.</p>
+          </section>
+          <section id="history" class="history" hidden>
+            <h2>Tonight</h2>
+            <ol id="history-list"></ol>
+          </section>
+        </div>
       </main>
 
       <div class="status-row">
