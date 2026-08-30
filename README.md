@@ -9,7 +9,7 @@ Playlist used by default: [Small Artist Roulette](https://open.spotify.com/playl
 ## What you get
 
 - Full playlist load via Spotify Web API pagination (not the public webpage scrape)
-- Roulette wheel labeled `1 … N`
+- Roulette wheel for a living-room TV: sparse rim numbers plus a jumbo callout under the pointer. Song titles stay hidden until it lands. Space or Enter also spins.
 - Independent-looking spins that **skip songs already played this visit** (same Spotify track id). After every unique song has been heard, a new round starts
 - Result card: title, artists, album, cover, duration, explicit flag, Open in Spotify, embed player
 - Click play **inside the embed**. Do not expect autoplay. Premium users logged into Spotify in the browser get the full track; others get a preview

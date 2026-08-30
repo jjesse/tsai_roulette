@@ -30,19 +30,19 @@ body {
 }
 
 .app {
-  max-width: 1100px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 2.5rem;
+  padding: 1.25rem 1.5rem 2rem;
 }
 
 header {
   text-align: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-size: clamp(2rem, 4.5vw, 3.4rem);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--gold);
@@ -52,19 +52,27 @@ h1 {
 .tagline {
   margin: 0.4rem 0 0;
   color: #d9c7a0;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
   opacity: 0.9;
 }
 
 .stage {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
-  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 1.75rem;
   align-items: center;
+}
+
+.wheel-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
 .wheel-wrap {
   position: relative;
-  width: min(100%, 560px);
+  width: min(100%, 720px);
   margin: 0 auto;
   aspect-ratio: 1;
 }
@@ -78,16 +86,37 @@ canvas {
 
 .pointer {
   position: absolute;
-  top: -6px;
+  top: -8px;
   left: 50%;
-  z-index: 2;
+  z-index: 3;
   width: 0;
   height: 0;
-  border-left: 14px solid transparent;
-  border-right: 14px solid transparent;
-  border-top: 28px solid var(--gold);
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-top: 36px solid var(--gold);
   transform: translateX(-50%);
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6));
+}
+
+.callout {
+  position: absolute;
+  top: 11%;
+  left: 50%;
+  z-index: 4;
+  transform: translateX(-50%);
+  min-width: 2.4ch;
+  padding: 0.1rem 0.55rem;
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  background: rgba(12, 7, 9, 0.88);
+  color: var(--gold);
+  font-size: clamp(2.8rem, 8vw, 5.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 2px 0 #3a2208;
 }
 
 .wheel-ring {
@@ -101,19 +130,15 @@ canvas {
 }
 
 #spin {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  z-index: 3;
-  transform: translate(-50%, -50%);
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
+  width: min(100%, 420px);
+  height: 72px;
+  border-radius: 999px;
   border: 2px solid var(--gold);
   background: radial-gradient(circle at 35% 30%, #5a1a24, #2a0c12 70%);
   color: var(--gold);
+  font-size: clamp(1.4rem, 3vw, 2rem);
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   cursor: pointer;
 }
@@ -123,16 +148,18 @@ canvas {
   cursor: wait;
 }
 
-#spin:not(:disabled):hover {
+#spin:not(:disabled):hover,
+#spin:not(:disabled):focus-visible {
   filter: brightness(1.15);
+  outline: none;
 }
 
 .result {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 18px;
-  padding: 1rem;
-  min-height: 320px;
+  padding: 1.15rem;
+  min-height: 380px;
   backdrop-filter: blur(8px);
 }
 
@@ -143,6 +170,7 @@ canvas {
 .result.empty p {
   margin: 0;
   padding: 2rem 1rem;
+  font-size: 1.25rem;
 }
 
 .result.empty {
@@ -155,7 +183,7 @@ canvas {
 .result .cover {
   width: 100%;
   aspect-ratio: 1;
-  max-height: 220px;
+  max-height: 280px;
   object-fit: cover;
   border-radius: 12px;
 }
@@ -166,7 +194,7 @@ canvas {
 
 .meta h2 {
   margin: 0.2rem 0;
-  font-size: 1.4rem;
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
 }
 
 .landed {
@@ -174,13 +202,14 @@ canvas {
   color: var(--gold);
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  font-size: 0.75rem;
+  font-size: 1.1rem;
 }
 
 .artists,
 .album {
   margin: 0.15rem 0;
   color: #d9c7a0;
+  font-size: 1.15rem;
 }
 
 .explicit {
@@ -197,6 +226,7 @@ canvas {
   display: inline-block;
   margin: 0.75rem 0;
   color: var(--gold);
+  font-size: 1.1rem;
 }
 
 .embed {
@@ -212,20 +242,21 @@ canvas {
   gap: 1rem;
   flex-wrap: wrap;
   margin: 1rem auto 0;
-  max-width: 1100px;
   color: #d9c7a0;
+  font-size: 1.05rem;
 }
 
 #round-note {
   text-align: center;
   color: var(--gold);
   min-height: 1.4em;
+  font-size: 1.2rem;
 }
 
 footer {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #b9a57d;
 }
 
@@ -241,6 +272,10 @@ footer a {
 @media (max-width: 800px) {
   .stage {
     grid-template-columns: 1fr;
+  }
+
+  .callout {
+    font-size: 2.6rem;
   }
 
   .result.hidden {

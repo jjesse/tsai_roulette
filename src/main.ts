@@ -15,9 +15,9 @@ const canvas = required<HTMLCanvasElement>("#wheel");
 const spinButton = required<HTMLButtonElement>("#spin");
 const statusEl = required<HTMLParagraphElement>("#status");
 const resultEl = required<HTMLElement>("#result");
-const titleEl = required<HTMLHeadingElement>("#playlist-title");
 const remainingEl = required<HTMLParagraphElement>("#remaining");
 const roundNote = required<HTMLParagraphElement>("#round-note");
+const callout = required<HTMLElement>("#callout");
 
 const wheel = new RouletteWheel(canvas);
 let playlist: PlaylistPayload | null = null;
@@ -39,8 +39,21 @@ function remainingCount(tracks: Track[], playedIds: string[]): number {
   return tracks.filter((track) => !played.has(track.id)).length;
 }
 
+function playedIndices(tracks: Track[], playedIds: Iterable<string>): number[] {
+  const played = new Set(playedIds);
+  const indices: number[] = [];
+  tracks.forEach((track, index) => {
+    if (played.has(track.id)) indices.push(index);
+  });
+  return indices;
+}
+
 function setStatus(message: string): void {
   statusEl.textContent = message;
+}
+
+function setCallout(index: number): void {
+  callout.textContent = String(index + 1);
 }
 
 function showResult(track: Track): void {
@@ -81,8 +94,13 @@ function escapeHtml(value: string): string {
 function sizeWheel(): void {
   const stage = document.querySelector<HTMLElement>(".wheel-wrap");
   const width = stage?.clientWidth ?? 420;
-  const max = Math.min(width, window.innerHeight * 0.62, 560);
-  wheel.resize(Math.max(260, max));
+  const max = Math.min(width, window.innerHeight * 0.7, 720);
+  wheel.resize(Math.max(280, max));
+}
+
+function refreshPlayed(playedIds: Iterable<string>): void {
+  if (!playlist) return;
+  wheel.setPlayedIndices(playedIndices(playlist.tracks, playedIds));
 }
 
 async function spin(): Promise<void> {
@@ -90,6 +108,8 @@ async function spin(): Promise<void> {
   spinning = true;
   spinButton.disabled = true;
   roundNote.hidden = true;
+  resultEl.classList.add("empty");
+  resultEl.innerHTML = `<p>Spinning… the song stays hidden until it lands.</p>`;
   setStatus("Spinning…");
 
   const played = loadPlayedIds(playlist.snapshotId);
@@ -99,11 +119,16 @@ async function spin(): Promise<void> {
   if (pick.newRound) {
     roundNote.hidden = false;
     roundNote.textContent = "All songs played — starting a new round.";
+    refreshPlayed([]);
+  } else {
+    refreshPlayed(played);
   }
 
   const index = pick.track.number - 1;
-  await wheel.spinToIndex(index);
+  await wheel.spinToIndex(index, setCallout);
+  setCallout(index);
   showResult(pick.track);
+  refreshPlayed(pick.playedIds);
 
   const left = remainingCount(playlist.tracks, pick.playedIds);
   remainingEl.textContent = `${left} of ${uniqueCount(playlist.tracks)} unique songs left this round`;
@@ -118,14 +143,23 @@ async function boot(): Promise<void> {
   spinButton.addEventListener("click", () => {
     void spin();
   });
+  window.addEventListener("keydown", (event) => {
+    if (event.repeat) return;
+    if (event.key !== " " && event.key !== "Enter") return;
+    const target = event.target;
+    if (target instanceof HTMLElement && (target.tagName === "A" || target.tagName === "IFRAME")) return;
+    event.preventDefault();
+    void spin();
+  });
 
   try {
     setStatus("Loading playlist…");
     playlist = await fetchPlaylist();
-    titleEl.textContent = playlist.name;
     wheel.setSliceCount(playlist.tracks.length);
-    sizeWheel();
     const played = loadPlayedIds(playlist.snapshotId);
+    refreshPlayed(played);
+    sizeWheel();
+    setCallout(wheel.pointerIndex());
     remainingEl.textContent = `${remainingCount(playlist.tracks, played)} of ${uniqueCount(playlist.tracks)} unique songs left this round`;
     setStatus(`Ready — ${playlist.tracks.length} songs. Spin to pick a number.`);
     spinButton.disabled = false;

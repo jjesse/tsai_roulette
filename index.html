@@ -10,16 +10,18 @@
       <header>
         <h1>Small Artist Roulette</h1>
         <p class="tagline">Numbers only on the wheel. The song is a secret until it lands.</p>
-        <p id="playlist-title" class="tagline"></p>
       </header>
 
       <p id="round-note" hidden></p>
 
       <main class="stage">
-        <div class="wheel-wrap">
-          <div class="wheel-ring"></div>
-          <div class="pointer" aria-hidden="true"></div>
-          <canvas id="wheel" width="560" height="560"></canvas>
+        <div class="wheel-column">
+          <div class="wheel-wrap">
+            <div class="wheel-ring"></div>
+            <div class="pointer" aria-hidden="true"></div>
+            <div id="callout" class="callout" aria-live="polite">—</div>
+            <canvas id="wheel" width="720" height="720"></canvas>
+          </div>
           <button id="spin" type="button" disabled>Spin</button>
         </div>
 
@@ -36,7 +38,7 @@
       <footer>
         Content from <a href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer">Spotify</a>.
         Play the track with Spotify’s player after the spin. Full playback needs a Spotify account logged into this browser;
-        otherwise you get a preview.
+        otherwise you get a preview. Press Space or Enter to spin.
       </footer>
     </div>
     <script type="module" src="/src/main.ts"></script>
