@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { mapPlaylistItems, pickUnplayed } from "../shared/playlist.ts";
+import { mapPlaylistItems, parsePlaylistId, pickUnplayed } from "../shared/playlist.ts";
+
+describe("parsePlaylistId", () => {
+  it("strips share query params and accepts URLs", () => {
+    expect(parsePlaylistId("46gpuUdvKMnXSxGb5yTdAr?si=1c2123cc622e4219")).toBe("46gpuUdvKMnXSxGb5yTdAr");
+    expect(
+      parsePlaylistId("https://open.spotify.com/playlist/46gpuUdvKMnXSxGb5yTdAr?si=abc"),
+    ).toBe("46gpuUdvKMnXSxGb5yTdAr");
+    expect(parsePlaylistId("spotify:playlist:46gpuUdvKMnXSxGb5yTdAr")).toBe("46gpuUdvKMnXSxGb5yTdAr");
+  });
+});
 
 describe("mapPlaylistItems", () => {
   it("numbers playable tracks in playlist order and skips unusable rows", () => {

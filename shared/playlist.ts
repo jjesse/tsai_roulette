@@ -20,6 +20,15 @@ type PlaylistRow = {
   track?: SpotifyItem | null;
 };
 
+export function parsePlaylistId(raw: string): string {
+  const value = raw.trim();
+  const fromUri = value.match(/(?:playlist[/:]|spotify:playlist:)([A-Za-z0-9]+)(?:[?/#]|$)/);
+  if (fromUri?.[1]) return fromUri[1];
+  const fromQuery = value.split(/[?#]/)[0];
+  if (/^[A-Za-z0-9]+$/.test(fromQuery)) return fromQuery;
+  throw new Error(`Could not parse a Spotify playlist id from: ${value}`);
+}
+
 export function mapPlaylistItems(rawItems: unknown[]): Track[] {
   const tracks: Track[] = [];
 

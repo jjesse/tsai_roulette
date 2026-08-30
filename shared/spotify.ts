@@ -1,4 +1,4 @@
-import { mapPlaylistItems } from "./playlist.ts";
+import { mapPlaylistItems, parsePlaylistId } from "./playlist.ts";
 import type { PlaylistPayload, SpotifyEnv } from "./types.ts";
 
 const TOKEN_URL = "https://accounts.spotify.com/api/token";
@@ -70,7 +70,7 @@ async function spotifyGet<T>(token: string, path: string): Promise<T> {
   const response = await fetch(`${API}${path}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  const body = (await response.json()) as T & { error?: { message?: string } };
+  const body = (await response.json()) as T & { error?: { status?: number; message?: string } };
   if (!response.ok) {
     const message = body.error?.message || `Spotify request failed (${response.status})`;
     throw new Error(message);
@@ -78,10 +78,25 @@ async function spotifyGet<T>(token: string, path: string): Promise<T> {
   return body;
 }
 
+async function spotifyGetAllow403<T>(token: string, path: string): Promise<{ ok: true; body: T } | { ok: false; status: number; message: string }> {
+  const response = await fetch(`${API}${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const body = (await response.json()) as T & { error?: { message?: string } };
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: response.status,
+      message: body.error?.message || `Spotify request failed (${response.status})`,
+    };
+  }
+  return { ok: true, body };
+}
+
 export async function loadPlaylist(env: SpotifyEnv): Promise<PlaylistPayload> {
   requireEnv(env);
   const token = await getAccessToken(env);
-  const playlistId = env.SPOTIFY_PLAYLIST_ID.trim();
+  const playlistId = parsePlaylistId(env.SPOTIFY_PLAYLIST_ID);
 
   const meta = await spotifyGet<PlaylistMeta>(
     token,
@@ -93,14 +108,22 @@ export async function loadPlaylist(env: SpotifyEnv): Promise<PlaylistPayload> {
   let total = Number.POSITIVE_INFINITY;
 
   while (offset < total) {
-    const page = await spotifyGet<Paging>(
+    const page = await spotifyGetAllow403<Paging>(
       token,
       `/playlists/${encodeURIComponent(playlistId)}/items?limit=${PAGE_SIZE}&offset=${offset}`,
     );
-    const items = page.items ?? [];
-    total = page.total ?? items.length;
+    if (!page.ok) {
+      if (page.status === 403) {
+        throw new Error(
+          "Spotify forbids reading this playlist's tracks. The logged-in account must own the playlist or be a collaborator on it (Spotify 2026 API). Make a copy you own, or ask the owner to enable Collaborate and add you, then run npm run spotify:auth again.",
+        );
+      }
+      throw new Error(page.message);
+    }
+    const items = page.body.items ?? [];
+    total = page.body.total ?? items.length;
     rawItems.push(...items);
-    if (!page.next || items.length === 0) break;
+    if (!page.body.next || items.length === 0) break;
     offset += PAGE_SIZE;
   }
 

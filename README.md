@@ -33,7 +33,7 @@ You need Node.js 20+, a Spotify developer app, and collaborator (or owner) acces
 
    Paste the printed `SPOTIFY_REFRESH_TOKEN` into `.dev.vars`.
 5. Set `SPOTIFY_PLAYLIST_ID` (default is already the Small Artist Roulette id).
-6. Start the site:
+6. Start the site (Vite + Cloudflare plugin; `/api/playlist` runs in workerd):
 
    ```bash
    npm run dev
@@ -53,7 +53,7 @@ npm run build
 3. Build settings:
    - Framework preset: none
    - Build command: `npm run build`
-   - Build output directory: `dist`
+   - Build output directory: `dist/client`
 4. Environment variables (Production, encrypt the secrets):
    - `SPOTIFY_CLIENT_ID`
    - `SPOTIFY_CLIENT_SECRET`

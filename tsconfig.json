@@ -12,5 +12,5 @@
     "verbatimModuleSyntax": true,
     "types": ["vite/client", "node"]
   },
-  "include": ["src", "shared", "functions", "tests", "vite.config.ts"]
+  "include": ["src", "shared", "functions", "worker.ts", "tests", "vite.config.ts"]
 }

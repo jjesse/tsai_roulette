@@ -1,0 +1,7 @@
+name = "tsai-roulette"
+compatibility_date = "2025-10-08"
+main = "./worker.ts"
+
+[assets]
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
