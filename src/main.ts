@@ -7,7 +7,6 @@ import {
   type HistoryItem,
 } from "./played.ts";
 
-const SITE_URL = "https://smallartistroulette.subatomicforge.com";
 import { pickUnplayed, randomIndex, remainingUniqueCount, uniqueTrackCount } from "../shared/playlist.ts";
 import type { PlaylistPayload, Track } from "../shared/types.ts";
 import { RouletteWheel } from "./wheel.ts";
@@ -60,7 +59,7 @@ function setCallout(index: number): void {
 
 function shareLine(track: Track): string {
   const artists = track.artists.join(", ");
-  return `Small Artist Roulette No. ${track.number} — ${track.name} — ${artists}\n${SITE_URL}\n${track.url}`;
+  return `Small Artist Roulette No. ${track.number} — ${track.name} — ${artists}\n\n${track.url}`;
 }
 
 function renderHistory(items: HistoryItem[]): void {
