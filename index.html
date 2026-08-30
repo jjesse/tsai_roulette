@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Small Artist Roulette</title>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <h1>Small Artist Roulette</h1>
+        <p class="tagline">Numbers only on the wheel. The song is a secret until it lands.</p>
+        <p id="playlist-title" class="tagline"></p>
+      </header>
+
+      <p id="round-note" hidden></p>
+
+      <main class="stage">
+        <div class="wheel-wrap">
+          <div class="wheel-ring"></div>
+          <div class="pointer" aria-hidden="true"></div>
+          <canvas id="wheel" width="560" height="560"></canvas>
+          <button id="spin" type="button" disabled>Spin</button>
+        </div>
+
+        <section id="result" class="result empty" aria-live="polite">
+          <p>Spin the wheel. The song stays hidden until it lands.</p>
+        </section>
+      </main>
+
+      <div class="status-row">
+        <p id="status">Loading…</p>
+        <p id="remaining"></p>
+      </div>
+
+      <footer>
+        Content from <a href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer">Spotify</a>.
+        Play the track with Spotify’s player after the spin. Full playback needs a Spotify account logged into this browser;
+        otherwise you get a preview.
+      </footer>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

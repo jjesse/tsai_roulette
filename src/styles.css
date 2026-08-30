@@ -1,0 +1,249 @@
+:root {
+  color-scheme: dark;
+  --bg: #0c0709;
+  --felt: #145c3a;
+  --gold: #e6c878;
+  --gold-dim: #b8943c;
+  --cream: #f6e7c1;
+  --red: #8b1e2d;
+  --card: rgba(20, 10, 12, 0.82);
+  --line: rgba(230, 200, 120, 0.28);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 50% -10%, #3a1820 0%, transparent 42%),
+    radial-gradient(circle at 80% 110%, #0d3a26 0%, var(--bg) 46%);
+  color: var(--cream);
+}
+
+body {
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 2.5rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  text-shadow: 0 2px 0 #3a2208;
+}
+
+.tagline {
+  margin: 0.4rem 0 0;
+  color: #d9c7a0;
+  opacity: 0.9;
+}
+
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.wheel-wrap {
+  position: relative;
+  width: min(100%, 560px);
+  margin: 0 auto;
+  aspect-ratio: 1;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.45));
+}
+
+.pointer {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 28px solid var(--gold);
+  transform: translateX(-50%);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.6));
+}
+
+.wheel-ring {
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 10px var(--felt),
+    0 0 0 14px var(--gold-dim);
+}
+
+#spin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: radial-gradient(circle at 35% 30%, #5a1a24, #2a0c12 70%);
+  color: var(--gold);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#spin:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+#spin:not(:disabled):hover {
+  filter: brightness(1.15);
+}
+
+.result {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 1rem;
+  min-height: 320px;
+  backdrop-filter: blur(8px);
+}
+
+.result.hidden {
+  display: none;
+}
+
+.result.empty p {
+  margin: 0;
+  padding: 2rem 1rem;
+}
+
+.result.empty {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: #d9c7a0;
+}
+
+.result .cover {
+  width: 100%;
+  aspect-ratio: 1;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.result .cover.fallback {
+  background: linear-gradient(135deg, var(--red), #2a0c12);
+}
+
+.meta h2 {
+  margin: 0.2rem 0;
+  font-size: 1.4rem;
+}
+
+.landed {
+  margin: 0.75rem 0 0.2rem;
+  color: var(--gold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.artists,
+.album {
+  margin: 0.15rem 0;
+  color: #d9c7a0;
+}
+
+.explicit {
+  display: inline-block;
+  margin-left: 0.3rem;
+  padding: 0 0.35rem;
+  border: 1px solid #d9c7a0;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  vertical-align: middle;
+}
+
+.open-link {
+  display: inline-block;
+  margin: 0.75rem 0;
+  color: var(--gold);
+}
+
+.embed {
+  width: 100%;
+  height: 152px;
+  border: 0;
+  border-radius: 12px;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1rem auto 0;
+  max-width: 1100px;
+  color: #d9c7a0;
+}
+
+#round-note {
+  text-align: center;
+  color: var(--gold);
+  min-height: 1.4em;
+}
+
+footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #b9a57d;
+}
+
+footer a {
+  color: #1db954;
+}
+
+.error-detail {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+@media (max-width: 800px) {
+  .stage {
+    grid-template-columns: 1fr;
+  }
+
+  .result.hidden {
+    display: none;
+  }
+}
