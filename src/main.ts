@@ -60,7 +60,7 @@ function setCallout(index: number): void {
 
 function shareLine(track: Track): string {
   const artists = track.artists.join(", ");
-  return `Small Artist Roulette No. ${track.number} — ${track.name} — ${artists} ${SITE_URL}`;
+  return `Small Artist Roulette No. ${track.number} — ${track.name} — ${artists}\n${track.url}\n${SITE_URL}`;
 }
 
 function renderHistory(items: HistoryItem[]): void {
@@ -91,7 +91,7 @@ function showResult(track: Track): void {
       <p class="album">${escapeHtml(track.album)} · ${formatDuration(track.durationMs)}</p>
       <div class="result-actions">
         <a class="open-link" href="${track.url}" target="_blank" rel="noopener noreferrer">Open in Spotify</a>
-        <button type="button" class="copy-pick" data-share="${escapeHtml(shareLine(track))}">Copy</button>
+        <button type="button" class="copy-pick">Copy</button>
       </div>
     </div>
     <iframe
@@ -107,7 +107,7 @@ function showResult(track: Track): void {
 
   const copyButton = resultEl.querySelector<HTMLButtonElement>(".copy-pick");
   copyButton?.addEventListener("click", async () => {
-    const text = copyButton.dataset.share ?? shareLine(track);
+    const text = shareLine(track);
     try {
       await navigator.clipboard.writeText(text);
       copyButton.textContent = "Copied";
