@@ -5,19 +5,23 @@ export type WheelTheme = {
   slicePlayed: string;
   text: string;
   rim: string;
+  rimInner: string;
   hub: string;
   hubStroke: string;
+  peg: string;
 };
 
 const defaultTheme: WheelTheme = {
-  sliceA: "#1a0b10",
-  sliceB: "#8b1e2d",
-  sliceC: "#c9a227",
-  slicePlayed: "#2a1814",
-  text: "#f6e7c1",
-  rim: "#e6c878",
-  hub: "#14080c",
-  hubStroke: "#f0d58c",
+  sliceA: "#00BFB2",
+  sliceB: "#F6828C",
+  sliceC: "#F4D35E",
+  slicePlayed: "#2a2d36",
+  text: "#FAF0CA",
+  rim: "#00BFB2",
+  rimInner: "#363946",
+  hub: "#363946",
+  hubStroke: "#FAF0CA",
+  peg: "#FAF0CA",
 };
 
 export function normalizeAngle(radians: number): number {
@@ -29,19 +33,6 @@ export function sliceIndexAtPointer(angle: number, sliceCount: number): number {
   const n = Math.max(1, sliceCount);
   const slice = (Math.PI * 2) / n;
   return Math.min(n - 1, Math.floor(normalizeAngle(-angle) / slice));
-}
-
-export function rimLabelStep(sliceCount: number): number {
-  if (sliceCount <= 24) return 1;
-  if (sliceCount <= 40) return 2;
-  if (sliceCount <= 80) return 5;
-  return 10;
-}
-
-export function shouldDrawRimLabel(index: number, sliceCount: number, pointerIndex: number): boolean {
-  if (index === pointerIndex) return true;
-  const step = rimLabelStep(sliceCount);
-  return (index + 1) % step === 0 || index === 0;
 }
 
 export class RouletteWheel {
@@ -86,76 +77,102 @@ export class RouletteWheel {
   }
 
   draw(): void {
-    const size = this.canvas.clientWidth;
+    const width = this.canvas.clientWidth;
+    const height = this.canvas.clientHeight;
+    const size = Math.min(width, height);
     const ctx = this.ctx;
-    const cx = size / 2;
-    const cy = size / 2;
-    const radius = size * 0.46;
     const n = this.sliceCount;
     const slice = (Math.PI * 2) / n;
     const pointer = sliceIndexAtPointer(this.angle, n);
 
-    ctx.clearRect(0, 0, size, size);
+    const rimWidth = Math.max(8, size * 0.02);
+    const hubStroke = Math.max(4, size * 0.01);
+    const outer = size / 2 - rimWidth / 2 - 1;
+    const hubR = outer * 0.3;
+    const labelR = outer * 0.84;
 
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.clearRect(0, 0, width, height);
     ctx.save();
-    ctx.translate(cx, cy);
+    ctx.translate(width / 2, height / 2);
     ctx.rotate(this.angle);
+
+    ctx.beginPath();
+    ctx.arc(0, 0, outer, 0, Math.PI * 2);
+    ctx.clip();
 
     const colors = [this.theme.sliceA, this.theme.sliceB, this.theme.sliceC];
     for (let i = 0; i < n; i += 1) {
       const start = i * slice - Math.PI / 2;
       const end = start + slice;
+      const fill = this.played.has(i) ? this.theme.slicePlayed : colors[i % colors.length];
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.arc(0, 0, radius, start, end);
+      ctx.arc(0, 0, outer + 2, start, end);
       ctx.closePath();
-      ctx.fillStyle = this.played.has(i) ? this.theme.slicePlayed : colors[i % colors.length];
+      ctx.fillStyle = fill;
       ctx.fill();
-      ctx.strokeStyle = "rgba(246, 231, 193, 0.18)";
-      ctx.lineWidth = 1;
-      ctx.stroke();
+    }
 
-      if (!shouldDrawRimLabel(i, n, pointer)) continue;
+    ctx.beginPath();
+    for (let i = 0; i < n; i += 1) {
+      const a = i * slice - Math.PI / 2;
+      ctx.moveTo(Math.cos(a) * hubR, Math.sin(a) * hubR);
+      ctx.lineTo(Math.cos(a) * outer, Math.sin(a) * outer);
+    }
+    ctx.strokeStyle = "rgba(54, 57, 70, 0.28)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
 
-      const mid = start + slice / 2;
-      const labelR = radius * 0.78;
+    const fontSize = Math.max(8, Math.min(14, slice * labelR * 0.9));
+    for (let i = 0; i < n; i += 1) {
+      const fill = this.played.has(i) ? this.theme.slicePlayed : colors[i % colors.length];
+      const mid = i * slice - Math.PI / 2 + slice / 2;
       ctx.save();
       ctx.rotate(mid + Math.PI / 2);
       ctx.translate(0, -labelR);
-      ctx.fillStyle = this.theme.text;
-      ctx.globalAlpha = this.played.has(i) ? 0.35 : 1;
-      const fontSize = i === pointer ? 18 : 13;
-      ctx.font = `700 ${fontSize}px "Trebuchet MS", "Segoe UI", sans-serif`;
+      ctx.fillStyle = fill.toLowerCase() === this.theme.sliceC.toLowerCase() ? "#363946" : this.theme.text;
+      ctx.globalAlpha = this.played.has(i) ? 0.4 : 1;
+      ctx.font = `700 ${i === pointer ? fontSize + 2 : fontSize}px "Trebuchet MS", "Segoe UI", sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(String(i + 1), 0, 0);
       ctx.restore();
     }
+    ctx.restore();
 
+    ctx.save();
+    ctx.translate(width / 2, height / 2);
     ctx.beginPath();
-    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.arc(0, 0, outer, 0, Math.PI * 2);
     ctx.strokeStyle = this.theme.rim;
-    ctx.lineWidth = size * 0.018;
+    ctx.lineWidth = rimWidth;
+    ctx.lineJoin = "round";
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.arc(0, 0, radius * 0.18, 0, Math.PI * 2);
+    ctx.arc(0, 0, hubR, 0, Math.PI * 2);
     ctx.fillStyle = this.theme.hub;
     ctx.fill();
     ctx.strokeStyle = this.theme.hubStroke;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = hubStroke;
     ctx.stroke();
+
+    const hubLabel = String(pointer + 1);
+    ctx.fillStyle = "#00BFB2";
+    ctx.font = `800 ${Math.floor(hubR * 0.85)}px "Trebuchet MS", "Segoe UI", sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(hubLabel, 0, 0);
     ctx.restore();
   }
 
   spinToIndex(index: number, onIndex: (pointerIndex: number) => void, durationMs = 6000): Promise<void> {
     if (this.animation !== null) cancelAnimationFrame(this.animation);
     const n = this.sliceCount;
-    const slice = (Math.PI * 2) / n;
-    const extraTurns = 5 + Math.random() * 2;
-    const landing = normalizeAngle((n - index) * slice - slice / 2);
-    const spin = normalizeAngle(landing - normalizeAngle(this.angle));
-    const target = this.angle + extraTurns * Math.PI * 2 + spin;
+    const extraTurns = 5 + Math.floor(Math.random() * 3);
+    const target = spinTargetAngle(this.angle, index, n, extraTurns);
 
     const start = this.angle;
     const delta = target - start;
@@ -186,4 +203,18 @@ export class RouletteWheel {
       this.animation = requestAnimationFrame(tick);
     });
   }
+}
+
+export function spinTargetAngle(
+  currentAngle: number,
+  index: number,
+  sliceCount: number,
+  extraTurns: number,
+): number {
+  const n = Math.max(1, sliceCount);
+  const slice = (Math.PI * 2) / n;
+  const wholeTurns = Math.max(0, Math.floor(extraTurns));
+  const landing = normalizeAngle((n - index) * slice - slice / 2);
+  const spin = normalizeAngle(landing - normalizeAngle(currentAngle));
+  return currentAngle + wholeTurns * Math.PI * 2 + spin;
 }

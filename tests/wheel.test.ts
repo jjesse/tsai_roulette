@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  normalizeAngle,
-  rimLabelStep,
-  shouldDrawRimLabel,
-  sliceIndexAtPointer,
-} from "../src/wheel.ts";
+import { normalizeAngle, sliceIndexAtPointer, spinTargetAngle } from "../src/wheel.ts";
 
 describe("sliceIndexAtPointer", () => {
   it("starts on slice 0", () => {
@@ -19,14 +14,12 @@ describe("sliceIndexAtPointer", () => {
       expect(sliceIndexAtPointer(landing, n)).toBe(index);
     }
   });
-});
 
-describe("rim labels", () => {
-  it("uses tens for a 106-slice wheel and always includes the pointer slice", () => {
-    expect(rimLabelStep(106)).toBe(10);
-    expect(shouldDrawRimLabel(0, 106, 7)).toBe(true);
-    expect(shouldDrawRimLabel(9, 106, 7)).toBe(true);
-    expect(shouldDrawRimLabel(7, 106, 7)).toBe(true);
-    expect(shouldDrawRimLabel(8, 106, 7)).toBe(false);
+  it("whole extra turns land on the chosen index even if extraTurns is fractional", () => {
+    const n = 106;
+    for (const index of [14, 70, 105]) {
+      const target = spinTargetAngle(12.3, index, n, 5.7);
+      expect(sliceIndexAtPointer(target, n)).toBe(index);
+    }
   });
 });

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { mapPlaylistItems, parsePlaylistId, pickUnplayed } from "../shared/playlist.ts";
+import {
+  mapPlaylistItems,
+  parsePlaylistId,
+  pickUnplayed,
+  remainingUniqueCount,
+  uniqueTrackCount,
+} from "../shared/playlist.ts";
 
 describe("parsePlaylistId", () => {
   it("strips share query params and accepts URLs", () => {
@@ -75,5 +81,18 @@ describe("pickUnplayed", () => {
     const afterAll = pickUnplayed(tracks, ["a", "b"], () => 1);
     expect(afterAll.newRound).toBe(true);
     expect(afterAll.playedIds).toEqual([afterAll.track.id]);
+  });
+});
+
+describe("unique remaining counts", () => {
+  it("counts unique ids, not duplicate playlist slots", () => {
+    const tracks = [
+      { id: "a" },
+      { id: "b" },
+      { id: "a" },
+    ];
+    expect(uniqueTrackCount(tracks)).toBe(2);
+    expect(remainingUniqueCount(tracks, [])).toBe(2);
+    expect(remainingUniqueCount(tracks, ["a"])).toBe(1);
   });
 });

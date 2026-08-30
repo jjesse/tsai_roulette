@@ -25,3 +25,7 @@ export function savePlayedIds(snapshotId: string, ids: string[]): void {
   const state: PlayedState = { snapshotId, ids };
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
+
+export function clearPlayedIds(): void {
+  sessionStorage.removeItem(STORAGE_KEY);
+}

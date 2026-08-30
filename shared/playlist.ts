@@ -87,6 +87,19 @@ export function pickUnplayed<T extends { id: string }>(
   return { track, playedIds: nextPlayed, newRound };
 }
 
+export function uniqueTrackCount<T extends { id: string }>(tracks: T[]): number {
+  return new Set(tracks.map((track) => track.id)).size;
+}
+
+export function remainingUniqueCount<T extends { id: string }>(
+  tracks: T[],
+  playedIds: Iterable<string>,
+): number {
+  const played = new Set(playedIds);
+  const leftover = new Set(tracks.filter((track) => !played.has(track.id)).map((track) => track.id));
+  return leftover.size;
+}
+
 export function randomIndex(length: number): number {
   if (length <= 0) throw new Error("randomIndex length must be positive");
   const buffer = new Uint32Array(1);

@@ -17,12 +17,14 @@
       <main class="stage">
         <div class="wheel-column">
           <div class="wheel-wrap">
-            <div class="wheel-ring"></div>
             <div class="pointer" aria-hidden="true"></div>
             <div id="callout" class="callout" aria-live="polite">—</div>
             <canvas id="wheel" width="720" height="720"></canvas>
           </div>
-          <button id="spin" type="button" disabled>Spin</button>
+          <div class="controls">
+            <button id="spin" type="button" disabled>Spin</button>
+            <button id="new-session" type="button" disabled>New session</button>
+          </div>
         </div>
 
         <section id="result" class="result empty" aria-live="polite">

@@ -2,17 +2,20 @@
 
 A spin-and-play webpage for a Spotify playlist. The wheel shows **numbers only**. After a spin, the matching song is revealed with Spotify metadata and Spotify’s official embed player.
 
-Code lives in this GitHub repo. The site is meant to be hosted on **Cloudflare Pages**.
+**Live:** [https://smallartistroulette.subatomicforge.com](https://smallartistroulette.subatomicforge.com)
 
-Playlist used by default: [Small Artist Roulette](https://open.spotify.com/playlist/46gpuUdvKMnXSxGb5yTdAr) (`46gpuUdvKMnXSxGb5yTdAr`). Change it later with `SPOTIFY_PLAYLIST_ID` — no code change.
+Code is in this GitHub repo and deploys on **Cloudflare Pages**.
+
+Playlist id is `SPOTIFY_PLAYLIST_ID` (owned copy used in production). Change it in `.dev.vars` / Pages secrets — no code change.
 
 ## What you get
 
-- Full playlist load via Spotify Web API pagination (not the public webpage scrape)
-- Roulette wheel for a living-room TV: sparse rim numbers plus a jumbo callout under the pointer. Song titles stay hidden until it lands. Space or Enter also spins.
-- Independent-looking spins that **skip songs already played this visit** (same Spotify track id). After every unique song has been heard, a new round starts
+- Full playlist load via Spotify Web API pagination
+- One-piece roulette wheel (teal / pink / yellow) with numbers on the slices and the current number in the hub
+- Space or Enter also spins
+- Skips songs already played this session (same Spotify track id). **New session** clears the list without closing the tab. After every unique song, a new round starts
 - Result card: title, artists, album, cover, duration, explicit flag, Open in Spotify, embed player
-- Click play **inside the embed**. Do not expect autoplay. Premium users logged into Spotify in the browser get the full track; others get a preview
+- Click play **inside the embed**. Premium users logged into Spotify in the browser get the full track; otherwise a preview
 
 ## Local setup
 
@@ -48,20 +51,25 @@ npm run build
 
 ## Cloudflare Pages
 
-1. Push this repo to GitHub.
-2. In Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**.
-3. Build settings:
-   - Framework preset: none
-   - Build command: `npm run build`
-   - Build output directory: `dist/client`
-4. Environment variables (Production, encrypt the secrets):
-   - `SPOTIFY_CLIENT_ID`
-   - `SPOTIFY_CLIENT_SECRET`
-   - `SPOTIFY_REFRESH_TOKEN`
-   - `SPOTIFY_PLAYLIST_ID`
-5. Deploy. Pages Functions pick up `functions/api/playlist.ts` as `GET /api/playlist`.
+Production: [https://smallartistroulette.subatomicforge.com](https://smallartistroulette.subatomicforge.com)  
+Also: [https://tsai-roulette.pages.dev](https://tsai-roulette.pages.dev)
 
-Change the playlist later by updating `SPOTIFY_PLAYLIST_ID` in Cloudflare. You must own or collaborate on that playlist or Spotify returns 403.
+This project is connected to GitHub. A push to `main` should build and deploy.
+
+Manual deploy:
+
+```bash
+npm run pages:deploy
+```
+
+Build settings if you recreate the project:
+
+- Framework preset: none
+- Build command: `npm run build`
+- Build output directory: `dist/client`
+- Secrets: `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN`, `SPOTIFY_PLAYLIST_ID`
+
+You must own or collaborate on the playlist or Spotify returns 403.
 
 ## Notes
 

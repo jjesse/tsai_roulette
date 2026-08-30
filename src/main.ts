@@ -1,6 +1,6 @@
 import { fetchPlaylist } from "./api.ts";
-import { loadPlayedIds, savePlayedIds } from "./played.ts";
-import { pickUnplayed, randomIndex } from "../shared/playlist.ts";
+import { clearPlayedIds, loadPlayedIds, savePlayedIds } from "./played.ts";
+import { pickUnplayed, randomIndex, remainingUniqueCount, uniqueTrackCount } from "../shared/playlist.ts";
 import type { PlaylistPayload, Track } from "../shared/types.ts";
 import { RouletteWheel } from "./wheel.ts";
 import "./styles.css";
@@ -13,6 +13,7 @@ function required<T extends Element>(selector: string): T {
 
 const canvas = required<HTMLCanvasElement>("#wheel");
 const spinButton = required<HTMLButtonElement>("#spin");
+const newSessionButton = required<HTMLButtonElement>("#new-session");
 const statusEl = required<HTMLParagraphElement>("#status");
 const resultEl = required<HTMLElement>("#result");
 const remainingEl = required<HTMLParagraphElement>("#remaining");
@@ -28,15 +29,6 @@ function formatDuration(ms: number): string {
   const minutes = Math.floor(total / 60);
   const seconds = total % 60;
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-}
-
-function uniqueCount(tracks: Track[]): number {
-  return new Set(tracks.map((track) => track.id)).size;
-}
-
-function remainingCount(tracks: Track[], playedIds: string[]): number {
-  const played = new Set(playedIds);
-  return tracks.filter((track) => !played.has(track.id)).length;
 }
 
 function playedIndices(tracks: Track[], playedIds: Iterable<string>): number[] {
@@ -103,10 +95,27 @@ function refreshPlayed(playedIds: Iterable<string>): void {
   wheel.setPlayedIndices(playedIndices(playlist.tracks, playedIds));
 }
 
+function updateRemaining(playedIds: Iterable<string>): void {
+  if (!playlist) return;
+  remainingEl.textContent = `${remainingUniqueCount(playlist.tracks, playedIds)} of ${uniqueTrackCount(playlist.tracks)} unique songs left this round`;
+}
+
+function startNewSession(): void {
+  if (!playlist || spinning) return;
+  clearPlayedIds();
+  refreshPlayed([]);
+  roundNote.hidden = true;
+  resultEl.classList.add("empty");
+  resultEl.innerHTML = `<p>New session. Spin the wheel. The song stays hidden until it lands.</p>`;
+  updateRemaining([]);
+  setStatus(`New session — ${playlist.tracks.length} songs. Spin to pick a number.`);
+}
+
 async function spin(): Promise<void> {
   if (!playlist || spinning) return;
   spinning = true;
   spinButton.disabled = true;
+  newSessionButton.disabled = true;
   roundNote.hidden = true;
   resultEl.classList.add("empty");
   resultEl.innerHTML = `<p>Spinning… the song stays hidden until it lands.</p>`;
@@ -130,11 +139,11 @@ async function spin(): Promise<void> {
   showResult(pick.track);
   refreshPlayed(pick.playedIds);
 
-  const left = remainingCount(playlist.tracks, pick.playedIds);
-  remainingEl.textContent = `${left} of ${uniqueCount(playlist.tracks)} unique songs left this round`;
+  updateRemaining(pick.playedIds);
   setStatus(`Landed on ${pick.track.number}. Press play in the Spotify player.`);
   spinning = false;
   spinButton.disabled = false;
+  newSessionButton.disabled = false;
 }
 
 async function boot(): Promise<void> {
@@ -142,6 +151,9 @@ async function boot(): Promise<void> {
   window.addEventListener("resize", sizeWheel);
   spinButton.addEventListener("click", () => {
     void spin();
+  });
+  newSessionButton.addEventListener("click", () => {
+    startNewSession();
   });
   window.addEventListener("keydown", (event) => {
     if (event.repeat) return;
@@ -160,9 +172,10 @@ async function boot(): Promise<void> {
     refreshPlayed(played);
     sizeWheel();
     setCallout(wheel.pointerIndex());
-    remainingEl.textContent = `${remainingCount(playlist.tracks, played)} of ${uniqueCount(playlist.tracks)} unique songs left this round`;
+    updateRemaining(played);
     setStatus(`Ready — ${playlist.tracks.length} songs. Spin to pick a number.`);
     spinButton.disabled = false;
+    newSessionButton.disabled = false;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not load playlist";
     setStatus(message);
