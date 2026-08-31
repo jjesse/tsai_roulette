@@ -168,7 +168,11 @@ export class RouletteWheel {
     ctx.restore();
   }
 
-  spinToIndex(index: number, onIndex: (pointerIndex: number) => void, durationMs = 6000): Promise<void> {
+  spinToIndex(
+    index: number,
+    onIndex: (pointerIndex: number, progress01: number) => void,
+    durationMs = 6000,
+  ): Promise<void> {
     if (this.animation !== null) cancelAnimationFrame(this.animation);
     const n = this.sliceCount;
     const extraTurns = 5 + Math.floor(Math.random() * 3);
@@ -188,7 +192,7 @@ export class RouletteWheel {
         const current = sliceIndexAtPointer(this.angle, n);
         if (current !== lastReported) {
           lastReported = current;
-          onIndex(current);
+          onIndex(current, t);
         }
         if (t < 1) {
           this.animation = requestAnimationFrame(tick);
@@ -196,7 +200,7 @@ export class RouletteWheel {
           this.angle = target;
           this.draw();
           this.animation = null;
-          onIndex(sliceIndexAtPointer(this.angle, n));
+          onIndex(sliceIndexAtPointer(this.angle, n), 1);
           resolve();
         }
       };

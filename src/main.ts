@@ -10,6 +10,7 @@ import {
 import { pickUnplayed, randomIndex, remainingUniqueCount, uniqueTrackCount } from "../shared/playlist.ts";
 import type { PlaylistPayload, Track } from "../shared/types.ts";
 import { RouletteWheel } from "./wheel.ts";
+import { createSound } from "./sound.ts";
 import "./styles.css";
 
 function required<T extends Element>(selector: string): T {
@@ -21,6 +22,7 @@ function required<T extends Element>(selector: string): T {
 const canvas = required<HTMLCanvasElement>("#wheel");
 const spinButton = required<HTMLButtonElement>("#spin");
 const newSessionButton = required<HTMLButtonElement>("#new-session");
+const soundButton = required<HTMLButtonElement>("#sound");
 const statusEl = required<HTMLParagraphElement>("#status");
 const resultEl = required<HTMLElement>("#result");
 const remainingEl = required<HTMLParagraphElement>("#remaining");
@@ -30,8 +32,14 @@ const historyEl = required<HTMLElement>("#history");
 const historyList = required<HTMLElement>("#history-list");
 
 const wheel = new RouletteWheel(canvas);
+const sound = createSound();
 let playlist: PlaylistPayload | null = null;
 let spinning = false;
+
+function syncSoundButton(): void {
+  soundButton.textContent = sound.isMuted() ? "Muted" : "Sound";
+  soundButton.setAttribute("aria-pressed", sound.isMuted() ? "true" : "false");
+}
 
 function formatDuration(ms: number): string {
   const total = Math.round(ms / 1000);
@@ -181,9 +189,14 @@ async function spin(): Promise<void> {
     refreshPlayed(played);
   }
 
+  await sound.unlock();
   const index = pick.track.number - 1;
-  await wheel.spinToIndex(index, setCallout);
+  await wheel.spinToIndex(index, (pointerIndex, progress) => {
+    setCallout(pointerIndex);
+    sound.tick(progress);
+  });
   setCallout(index);
+  sound.land();
   showResult(pick.track);
   refreshPlayed(pick.playedIds);
   renderHistory(session.history);
@@ -203,6 +216,10 @@ async function boot(): Promise<void> {
   });
   newSessionButton.addEventListener("click", () => {
     startNewSession();
+  });
+  soundButton.addEventListener("click", () => {
+    sound.setMuted(!sound.isMuted());
+    syncSoundButton();
   });
   window.addEventListener("keydown", (event) => {
     if (event.repeat) return;
@@ -226,6 +243,8 @@ async function boot(): Promise<void> {
     setStatus(`Ready — ${playlist.tracks.length} songs. Spin to pick a number.`);
     spinButton.disabled = false;
     newSessionButton.disabled = false;
+    soundButton.disabled = false;
+    syncSoundButton();
   } catch (error) {
     const message = error instanceof Error ? error.message : "Could not load playlist";
     setStatus(message);

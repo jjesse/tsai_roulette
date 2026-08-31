@@ -12,7 +12,7 @@ Playlist id is `SPOTIFY_PLAYLIST_ID` (owned copy used in production). Change it 
 
 - Full playlist load via Spotify Web API pagination
 - One-piece roulette wheel (teal / pink / yellow) with numbers on the slices and the current number in the hub
-- Space or Enter also spins
+- Space or Enter also spins. Generated wheel ticks and a land sting; **Sound** / **Muted** remembers the host’s choice
 - Skips songs already played this session (same Spotify track id). **New session** clears the list without closing the tab. After every unique song, a new round starts
 - Tonight list of landed songs, Copy to share a pick, favicon and link preview for the live URL
 - Result card: title, artists, album, cover, duration, explicit flag, Open in Spotify, embed player
