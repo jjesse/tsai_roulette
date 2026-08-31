@@ -170,11 +170,12 @@ export class RouletteWheel {
     ctx.fillText(hubLabel, 0, 0);
 
     const rimOuter = outer + rimWidth / 2;
-    const tip = -rimOuter;
+    const base = -rimOuter;
+    const tip = base + pointerHeight;
     ctx.beginPath();
     ctx.moveTo(0, tip);
-    ctx.lineTo(-pointerWidth, tip + pointerHeight);
-    ctx.lineTo(pointerWidth, tip + pointerHeight);
+    ctx.lineTo(-pointerWidth, base);
+    ctx.lineTo(pointerWidth, base);
     ctx.closePath();
     ctx.fillStyle = this.theme.peg;
     ctx.strokeStyle = this.theme.hub;
