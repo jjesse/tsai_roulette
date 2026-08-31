@@ -21,7 +21,7 @@ const defaultTheme: WheelTheme = {
   rimInner: "#363946",
   hub: "#363946",
   hubStroke: "#FAF0CA",
-  peg: "#FAF0CA",
+  peg: "#F4D35E",
 };
 
 export function normalizeAngle(radians: number): number {
@@ -66,12 +66,12 @@ export class RouletteWheel {
     return sliceIndexAtPointer(this.angle, this.sliceCount);
   }
 
-  resize(cssSize: number): void {
+  resize(): void {
+    const cssWidth = Math.max(1, this.canvas.clientWidth);
+    const cssHeight = Math.max(1, this.canvas.clientHeight);
     const dpr = Math.max(1, window.devicePixelRatio || 1);
-    this.canvas.style.width = `${cssSize}px`;
-    this.canvas.style.height = `${cssSize}px`;
-    this.canvas.width = Math.floor(cssSize * dpr);
-    this.canvas.height = Math.floor(cssSize * dpr);
+    this.canvas.width = Math.floor(cssWidth * dpr);
+    this.canvas.height = Math.floor(cssHeight * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.draw();
   }
@@ -87,7 +87,10 @@ export class RouletteWheel {
 
     const rimWidth = Math.max(8, size * 0.02);
     const hubStroke = Math.max(4, size * 0.01);
-    const outer = size / 2 - rimWidth / 2 - 1;
+    const pointerHeight = Math.max(22, size * 0.045);
+    const pointerWidth = pointerHeight * 0.55;
+    const pointerPad = pointerHeight * 0.2;
+    const outer = size / 2 - rimWidth / 2 - pointerPad - 1;
     const hubR = outer * 0.3;
     const labelR = outer * 0.84;
 
@@ -165,6 +168,20 @@ export class RouletteWheel {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(hubLabel, 0, 0);
+
+    const rimOuter = outer + rimWidth / 2;
+    const tip = -rimOuter;
+    ctx.beginPath();
+    ctx.moveTo(0, tip);
+    ctx.lineTo(-pointerWidth, tip + pointerHeight);
+    ctx.lineTo(pointerWidth, tip + pointerHeight);
+    ctx.closePath();
+    ctx.fillStyle = this.theme.peg;
+    ctx.strokeStyle = this.theme.hub;
+    ctx.lineWidth = Math.max(2, size * 0.004);
+    ctx.lineJoin = "round";
+    ctx.fill();
+    ctx.stroke();
     ctx.restore();
   }
 

@@ -22,4 +22,12 @@ describe("sliceIndexAtPointer", () => {
       expect(sliceIndexAtPointer(target, n)).toBe(index);
     }
   });
+
+  it("hub number and pick share the pointer index (not a nearby rim number)", () => {
+    const n = 106;
+    const pickIndex = 70;
+    const target = spinTargetAngle(0, pickIndex, n, 5);
+    expect(sliceIndexAtPointer(target, n)).toBe(70);
+    expect(sliceIndexAtPointer(target, n) + 1).toBe(71);
+  });
 });

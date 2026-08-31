@@ -133,10 +133,15 @@ function escapeHtml(value: string): string {
 }
 
 function sizeWheel(): void {
-  const stage = document.querySelector<HTMLElement>(".wheel-wrap");
-  const width = stage?.clientWidth ?? 420;
-  const max = Math.min(width, window.innerHeight * 0.7, 720);
-  wheel.resize(Math.max(280, max));
+  wheel.resize();
+}
+
+function watchWheelSize(): void {
+  window.addEventListener("resize", sizeWheel);
+  const wrap = document.querySelector(".wheel-wrap");
+  if (wrap && typeof ResizeObserver !== "undefined") {
+    new ResizeObserver(() => sizeWheel()).observe(wrap);
+  }
 }
 
 function refreshPlayed(playedIds: Iterable<string>): void {
@@ -210,7 +215,7 @@ async function spin(): Promise<void> {
 
 async function boot(): Promise<void> {
   sizeWheel();
-  window.addEventListener("resize", sizeWheel);
+  watchWheelSize();
   spinButton.addEventListener("click", () => {
     void spin();
   });
